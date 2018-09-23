@@ -1,0 +1,13 @@
+[workspace]
+members = [
+  "custom-logging",
+  "diesel",
+  "todos",
+  "template-tera",
+  "staticfiles",
+]
+
+[patch.crates-io]
+finchers = { git = "https://github.com/finchers-rs/finchers.git" }
+finchers-cors = { git = "https://github.com/finchers-rs/finchers-cors.git" }
+finchers-juniper = { git = "https://github.com/finchers-rs/finchers-juniper.git" }
