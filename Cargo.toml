@@ -4,6 +4,7 @@ members = [
   "diesel",
   "todos",
   "template-tera",
+  "session-redis",
   "staticfiles",
 ]
 

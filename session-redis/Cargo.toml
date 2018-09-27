@@ -1,0 +1,23 @@
+[package]
+name = "example-session-redis"
+version = "0.0.0"
+edition = "2018"
+authors = ["Yusuke Sasaki <yusuke.sasaki.nuem@gmail.com>"]
+publish = false
+
+[[bin]]
+name = "session_redis"
+path = "src/main.rs"
+doc = false
+
+[dependencies]
+finchers = "0.12.0-alpha.8"
+finchers-session = "0.1.0"
+
+failure = "0.1.2"
+futures = "0.1.24"
+http = "0.1.13"
+log = "0.4.5"
+pretty_env_logger = "0.2.4"
+redis = "0.9"
+serde = { version = "1.0.79", features = ["derive"] }
