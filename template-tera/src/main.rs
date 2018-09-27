@@ -1,5 +1,4 @@
 use finchers::error::{fail, Error};
-use finchers::output::payload::Once;
 use finchers::prelude::*;
 use finchers::{path, routes};
 
@@ -31,12 +30,12 @@ fn main() {
     finchers::launch(endpoint).start("127.0.0.1:4000")
 }
 
-fn render_template(tera: Arc<Tera>, template: &str) -> Result<Response<Once<String>>, Error> {
+fn render_template(tera: Arc<Tera>, template: &str) -> Result<Response<String>, Error> {
     tera.render(template, &Context::default())
         .map(|body| {
             Response::builder()
                 .header("content-type", "text/html; charset=utf-8")
-                .body(Once::new(body))
+                .body(body)
                 .unwrap()
         }).map_err(|err| fail(SyncFailure::new(err)))
 }
