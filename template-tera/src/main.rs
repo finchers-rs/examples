@@ -1,41 +1,29 @@
-use finchers::error::{fail, Error};
 use finchers::prelude::*;
 use finchers::{path, routes};
-
-use failure::SyncFailure;
-use http::Response;
 use std::sync::Arc;
-use tera::{compile_templates, Context, Tera};
+
+mod template;
+use crate::template::template;
 
 fn main() {
-    let tera = endpoint::value(Arc::new(compile_templates!(concat!(
+    let engine = Arc::new(tera::compile_templates!(concat!(
         env!("CARGO_MANIFEST_DIR"),
         "/templates/**/*"
-    ))));
+    )));
 
     let index = path!(@get /)
-        .and(tera.clone())
-        .map(|tera| render_template(tera, "index.html"));
+        .map(|| ())
+        .wrap(template(engine.clone(), "index.html"));
 
     let detail = path!(@get /"detail"/)
-        .and(tera.clone())
-        .map(|tera| render_template(tera, "detail.html"));
+        .map(|| ())
+        .wrap(template(engine.clone(), "detail.html"));
 
     let p404 = endpoint::syntax::verb::get()
-        .and(tera.clone())
-        .map(|tera| render_template(tera, "404.html"));
+        .map(|| ())
+        .wrap(template(engine.clone(), "404.html"));
 
     let endpoint = routes![index, detail, p404];
 
     finchers::launch(endpoint).start("127.0.0.1:4000")
-}
-
-fn render_template(tera: Arc<Tera>, template: &str) -> Result<Response<String>, Error> {
-    tera.render(template, &Context::default())
-        .map(|body| {
-            Response::builder()
-                .header("content-type", "text/html; charset=utf-8")
-                .body(body)
-                .unwrap()
-        }).map_err(|err| fail(SyncFailure::new(err)))
 }
