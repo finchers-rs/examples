@@ -1,29 +1,20 @@
+use finchers::path;
 use finchers::prelude::*;
-use finchers::{path, routes};
-use std::sync::Arc;
-
-mod template;
-use crate::template::template;
+use finchers_template_tera::template;
 
 fn main() {
-    let engine = Arc::new(tera::compile_templates!(concat!(
+    let template = template(tera::compile_templates!(concat!(
         env!("CARGO_MANIFEST_DIR"),
         "/templates/**/*"
     )));
 
-    let index = path!(@get /)
-        .map(|| ())
-        .wrap(template(engine.clone(), "index.html"));
+    let index = path!(@get /).and(template.to_renderer("index.html"));
 
-    let detail = path!(@get /"detail"/)
-        .map(|| ())
-        .wrap(template(engine.clone(), "detail.html"));
+    let detail = path!(@get /"detail"/ String).wrap(template.to_renderer("detail.html"));
 
-    let p404 = endpoint::syntax::verb::get()
-        .map(|| ())
-        .wrap(template(engine.clone(), "404.html"));
+    let p404 = endpoint::syntax::verb::get().and(template.to_renderer("404.html"));
 
-    let endpoint = routes![index, detail, p404];
+    let endpoint = index.or(detail).or(p404);
 
     finchers::launch(endpoint).start("127.0.0.1:4000")
 }

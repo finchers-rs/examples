@@ -13,4 +13,5 @@ finchers = { git = "https://github.com/finchers-rs/finchers.git" }
 finchers-cors = { git = "https://github.com/finchers-rs/finchers-cors.git" }
 finchers-juniper = { git = "https://github.com/finchers-rs/finchers-juniper.git" }
 finchers-session = { git = "https://github.com/finchers-rs/finchers-session.git" }
+finchers-template-tera = { git = "https://github.com/finchers-rs/finchers-template-tera.git" }
 finchers-tungstenite = { git = "https://github.com/finchers-rs/finchers-tungstenite.git" }
