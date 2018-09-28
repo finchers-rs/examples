@@ -1,4 +1,3 @@
-use finchers::input::query::Serde;
 use finchers::prelude::*;
 use finchers::{path, routes};
 use finchers_session::{session, Session};
@@ -73,7 +72,7 @@ fn main() -> Fallible<()> {
 
         path!(@post /"login"/)
             .and(session.clone())
-            .and(endpoints::body::urlencoded().map(Serde::into_inner))
+            .and(endpoints::body::urlencoded())
             .and_then(|mut session: Session<Login, _>, form: Form| {
                 session
                     .set(Login {

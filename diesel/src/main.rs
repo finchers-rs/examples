@@ -14,7 +14,6 @@ use http::StatusCode;
 use serde::Deserialize;
 use std::env;
 
-use finchers::input::query::Serde;
 use finchers::prelude::*;
 use finchers::{output, path, routes};
 
@@ -28,9 +27,7 @@ fn main() -> Fallible<()> {
 
     let endpoint = path!(/"api"/"v1"/"posts").and(routes!{
         path!(@get /)
-            .and(endpoints::query::optional().map(|query: Option<_>| {
-                query.map(Serde::into_inner)
-            }))
+            .and(endpoints::query::optional())
             .and(acquire_conn.clone())
             .and_then(|query, conn| crate::api::get_posts(query, conn).from_err())
             .map(output::Json),
