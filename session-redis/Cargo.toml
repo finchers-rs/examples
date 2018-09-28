@@ -12,7 +12,7 @@ doc = false
 
 [dependencies]
 finchers = "0.12.0-alpha.8"
-finchers-session = "0.1.0"
+finchers-session = { version = "0.1.0", features = ["redis"] }
 
 failure = "0.1.2"
 futures = "0.1.24"

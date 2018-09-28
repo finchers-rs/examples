@@ -9,15 +9,12 @@ use http::{Response, StatusCode};
 use log::info;
 use redis::Client;
 use serde::{Deserialize, Serialize};
+use std::sync::Arc;
 use std::time::Duration;
 
 #[derive(Debug, Deserialize, Serialize)]
 struct Login {
     username: String,
-}
-
-impl Login {
-    const KEY: &'static str = "logged_in_user";
 }
 
 fn main() -> Fallible<()> {
@@ -28,12 +25,12 @@ fn main() -> Fallible<()> {
         .key_prefix("my-app-name")
         .cookie_name("my-session-id")
         .timeout(Duration::from_secs(60 * 3));
-    let session = session(backend);
+    let session = Arc::new(session(backend));
 
     let greet = path!(@get /)
         .and(session.clone())
-        .and_then(|session: Session<_>| {
-            let response = match session.get::<Login>(Login::KEY) {
+        .and_then(|session: Session<Login, _>| {
+            let response = match session.get() {
                 Ok(Some(login)) => html(format!(
                     "Hello, {}! <br />\n\
                      <form method=\"post\" action=\"/logout\">\n\
@@ -48,24 +45,25 @@ fn main() -> Fallible<()> {
                     .body("<a href=\"/login\">Log in</a>".into())
                     .unwrap(),
             };
-            session.finish().map(|_| response)
+            session.into_future().map(|_| response)
         });
 
-    let login = path!(@get /"login"/)
-        .and(session.clone())
-        .and_then(|session: Session<_>| {
-            let response = match session.get::<Login>(Login::KEY) {
-                Ok(Some(_login)) => redirect_to("/").map(|_| ""),
-                _ => html(
-                    "login form\n\
-                     <form method=\"post\">\n\
-                     <input type=\"text\" name=\"username\">\n\
-                     <input type=\"submit\">\n\
-                     </form>",
-                ),
-            };
-            session.finish().map(|_| response)
-        });
+    let login =
+        path!(@get /"login"/)
+            .and(session.clone())
+            .and_then(|session: Session<Login, _>| {
+                let response = match session.get() {
+                    Ok(Some(_login)) => redirect_to("/").map(|_| ""),
+                    _ => html(
+                        "login form\n\
+                         <form method=\"post\">\n\
+                         <input type=\"text\" name=\"username\">\n\
+                         <input type=\"submit\">\n\
+                         </form>",
+                    ),
+                };
+                session.into_future().map(|_| response)
+            });
 
     let login_post = {
         #[derive(Debug, Deserialize)]
@@ -76,24 +74,21 @@ fn main() -> Fallible<()> {
         path!(@post /"login"/)
             .and(session.clone())
             .and(endpoints::body::urlencoded().map(Serde::into_inner))
-            .and_then(|mut session: Session<_>, form: Form| {
+            .and_then(|mut session: Session<Login, _>, form: Form| {
                 session
-                    .set(
-                        Login::KEY,
-                        Login {
-                            username: form.username,
-                        },
-                    ).into_future()
-                    .and_then(move |()| session.finish().map(|_| redirect_to("/")))
+                    .set(Login {
+                        username: form.username,
+                    }).into_future()
+                    .and_then(move |()| session.into_future().map(|_| redirect_to("/")))
             })
     };
 
     let logout =
         path!(@post /"logout"/)
             .and(session.clone())
-            .and_then(|mut session: Session<_>| {
-                session.clear();
-                session.finish().map(|_| redirect_to("/"))
+            .and_then(|mut session: Session<Login, _>| {
+                session.remove();
+                session.into_future().map(|_| redirect_to("/"))
             });
 
     let endpoint = endpoint::EndpointObj::new(routes![greet, login, login_post, logout,]);
