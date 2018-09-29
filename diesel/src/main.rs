@@ -4,13 +4,13 @@
 extern crate diesel;
 
 mod api;
-mod database;
 mod model;
 mod schema;
+mod util;
 
 use diesel::pg::PgConnection;
 use diesel::r2d2::ConnectionManager;
-use finchers_r2d2::Pool;
+use finchers_r2d2::{Pool, PooledConnection};
 
 use failure::Fallible;
 use futures::prelude::*;
@@ -22,13 +22,14 @@ use std::sync::Arc;
 use finchers::prelude::*;
 use finchers::{output, path, routes};
 
+type Conn = PooledConnection<ConnectionManager<PgConnection>>;
+
 fn main() -> Fallible<()> {
     dotenv::dotenv()?;
 
     let manager = ConnectionManager::<PgConnection>::new(env::var("DATABASE_URL")?);
     let pool = Pool::builder().build(manager)?;
-    let acquire_conn =
-        Arc::new(finchers_r2d2::pool_endpoint(pool).map(crate::database::Connection::new));
+    let acquire_conn = Arc::new(finchers_r2d2::pool_endpoint(pool));
 
     let endpoint = path!(/"api"/"v1"/"posts").and(routes!{
         path!(@get /)
