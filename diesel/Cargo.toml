@@ -12,6 +12,7 @@ doc = false
 
 [dependencies]
 finchers = "0.12.0-alpha.8"
+finchers-r2d2 = "0.1.0-dev"
 
 diesel = { version = "1.3.2", features = ["postgres", "r2d2"] }
 dotenv = "0.13.0"

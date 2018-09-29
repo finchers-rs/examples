@@ -8,22 +8,27 @@ mod database;
 mod model;
 mod schema;
 
+use diesel::pg::PgConnection;
+use diesel::r2d2::ConnectionManager;
+use finchers_r2d2::Pool;
+
 use failure::Fallible;
 use futures::prelude::*;
 use http::StatusCode;
 use serde::Deserialize;
 use std::env;
+use std::sync::Arc;
 
 use finchers::prelude::*;
 use finchers::{output, path, routes};
 
-use crate::database::ConnectionPool;
-
 fn main() -> Fallible<()> {
     dotenv::dotenv()?;
 
-    let pool = ConnectionPool::init(env::var("DATABASE_URL")?)?;
-    let acquire_conn = endpoint::unit().and_then(move || pool.acquire_conn().map_err(Into::into));
+    let manager = ConnectionManager::<PgConnection>::new(env::var("DATABASE_URL")?);
+    let pool = Pool::builder().build(manager)?;
+    let acquire_conn =
+        Arc::new(finchers_r2d2::pool_endpoint(pool).map(crate::database::Connection::new));
 
     let endpoint = path!(/"api"/"v1"/"posts").and(routes!{
         path!(@get /)
