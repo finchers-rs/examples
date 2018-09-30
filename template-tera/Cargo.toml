@@ -12,5 +12,5 @@ doc = false
 
 [dependencies]
 finchers = "0.12.0-alpha.8"
-finchers-template-tera = "0.1.0-dev"
+finchers-template = { version = "0.1.0-dev", features = ["tera"] }
 tera = "0.11.16"
