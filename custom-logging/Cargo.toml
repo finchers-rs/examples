@@ -11,7 +11,6 @@ path = "src/main.rs"
 doc = false
 
 [dependencies]
-finchers = "0.12.0-alpha.8"
-
-slog = "2.3.3"
-sloggers = "0.2.8"
+finchers = "0.12"
+slog = "2.4"
+sloggers = "0.2"
