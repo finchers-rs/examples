@@ -1,19 +1,18 @@
 use finchers::path;
 use finchers::prelude::*;
-use finchers_template::Renderer;
+use finchers_template::renderer;
 use std::sync::Arc;
 
+const TEMPLATE_PATH: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/templates/**/*");
+
 fn main() {
-    let engine = Arc::new(tera::compile_templates!(concat!(
-        env!("CARGO_MANIFEST_DIR"),
-        "/templates/**/*"
-    )));
+    let engine = Arc::new(tera::compile_templates!(TEMPLATE_PATH));
 
-    let index = path!(@get /).and(Renderer::new(engine.clone(), "index.html"));
+    let index = path!(@get /).and(renderer(engine.clone(), "index.html"));
 
-    let detail = path!(@get /"detail"/ String).wrap(Renderer::new(engine.clone(), "detail.html"));
+    let detail = path!(@get /"detail"/ String).wrap(renderer(engine.clone(), "detail.html"));
 
-    let p404 = endpoint::syntax::verb::get().and(Renderer::new(engine.clone(), "404.html"));
+    let p404 = endpoint::syntax::verb::get().and(renderer(engine.clone(), "404.html"));
 
     let endpoint = index.or(detail).or(p404);
 
