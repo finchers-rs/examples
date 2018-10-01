@@ -5,6 +5,7 @@ members = [
   "session-redis",
   "staticfiles",
   "template-tera",
+  "websocket",
 ]
 
 [patch.crates-io]
