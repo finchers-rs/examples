@@ -2,10 +2,9 @@
 members = [
   "custom-logging",
   "diesel",
-  "todos",
-  "template-tera",
   "session-redis",
   "staticfiles",
+  "template-tera",
 ]
 
 [patch.crates-io]
