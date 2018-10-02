@@ -14,10 +14,11 @@ finchers-tungstenite = { git = "https://github.com/finchers-rs/finchers-tungsten
 
 [patch.crates-io.finchers]
 git = "https://github.com/finchers-rs/finchers.git"
+tag = "v0.12.2"
 
 [patch.crates-io.finchers-juniper]
 git = "https://github.com/finchers-rs/finchers-juniper.git"
-tag = "v0.1.0"
+tag = "v0.1.1"
 
 [patch.crates-io.finchers-r2d2]
 git = "https://github.com/finchers-rs/finchers-r2d2.git"

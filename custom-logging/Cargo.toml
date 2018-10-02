@@ -14,3 +14,5 @@ doc = false
 finchers = "0.12"
 slog = "2.4"
 sloggers = "0.2"
+http = "0.1.10"
+futures = "0.1.24"
