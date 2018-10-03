@@ -5,6 +5,7 @@ members = [
   "session-redis",
   "staticfiles",
   "template-tera",
+  "middlewares",
   "websocket",
 ]
 
@@ -14,7 +15,6 @@ finchers-tungstenite = { git = "https://github.com/finchers-rs/finchers-tungsten
 
 [patch.crates-io.finchers]
 git = "https://github.com/finchers-rs/finchers.git"
-tag = "v0.12.2"
 
 [patch.crates-io.finchers-juniper]
 git = "https://github.com/finchers-rs/finchers-juniper.git"
