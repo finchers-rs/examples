@@ -1,0 +1,17 @@
+[package]
+name = "example-middlewares"
+version = "0.0.0"
+authors = ["Yusuke Sasaki <yusuke.sasaki.nuem@gmail.com>"]
+edition = "2018"
+
+[[bin]]
+name = "middlewares"
+path = "src/main.rs"
+doc = false
+
+[dependencies]
+finchers = { version = "0.12", features = ["rt", "tower-web"] }
+tower-service = "0.1"
+tower-web = "0.3"
+http = "0.1.13"
+futures = "0.1.24"
