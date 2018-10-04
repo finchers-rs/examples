@@ -1,5 +1,6 @@
+use finchers::output::body::optional;
 use finchers::prelude::*;
-use finchers::rt::middleware::map_response;
+use finchers::rt::middleware::map_response_body;
 
 use http::Method;
 use tower_web::middleware::cors::{AllowedOrigins, CorsBuilder};
@@ -18,12 +19,7 @@ fn main() {
     finchers::rt::launch(endpoint)
         .with_tower_middleware(log_middleware)
         .with_tower_middleware(cors_middleware)
-        .with_middleware(map_response(optional))
-        .serve("127.0.0.1:4000")
+        .with_middleware(map_response_body(optional))
+        .serve_http("127.0.0.1:4000")
         .expect("failed to start the server");
-}
-
-// FIXME: move it into finchers::output::body because `Optional::from` is deprecated
-fn optional<T>(bd: Option<T>) -> finchers::output::body::Optional<T> {
-    finchers::output::body::Optional::from(bd)
 }
