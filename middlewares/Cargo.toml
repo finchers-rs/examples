@@ -14,4 +14,3 @@ finchers = { version = "0.12", features = ["rt", "tower-web"] }
 tower-service = "0.1"
 tower-web = { version = "0.3", default-features = false }
 http = "0.1.13"
-futures = "0.1.24"
