@@ -11,8 +11,8 @@ path = "src/main.rs"
 doc = false
 
 [dependencies]
-finchers = "0.12"
-finchers-session = { version = "0.1.0", features = ["redis"] }
+finchers = "0.13"
+finchers-session = { version = "0.2", features = ["redis"] }
 
 failure = "0.1.2"
 http = "0.1.13"

@@ -6,7 +6,6 @@ use finchers_session::Session;
 
 use failure::Fallible;
 use http::{Response, StatusCode};
-use log::info;
 use redis::Client;
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
@@ -97,8 +96,8 @@ fn main() -> Fallible<()> {
 
     let endpoint = endpoint::EndpointObj::new(routes![greet, login, login_post, logout,]);
 
-    info!("Listening on http://127.0.0.1:4000");
-    finchers::launch(endpoint).start("127.0.0.1:4000");
+    log::info!("Listening on http://127.0.0.1:4000");
+    finchers::server::start(endpoint).serve("127.0.0.1:4000")?;
 
     Ok(())
 }

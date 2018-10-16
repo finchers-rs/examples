@@ -8,5 +8,7 @@ fn main() {
         endpoint::syntax::verb::get().map(|| "Not found"),
     ];
 
-    finchers::launch(endpoint).start("127.0.0.1:5000")
+    finchers::server::start(endpoint)
+        .serve("127.0.0.1:5000")
+        .unwrap_or_else(|e| eprintln!("{}", e));
 }

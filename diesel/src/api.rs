@@ -1,11 +1,9 @@
 use diesel::prelude::*;
-use failure::Error;
-use futures::prelude::*;
+use failure::Fallible;
 use serde::Deserialize;
 
 use crate::model::{NewPost, Post};
 use crate::schema::posts;
-use crate::util::execute_blocking_code;
 use crate::Conn;
 
 #[derive(Debug, Deserialize)]
@@ -19,25 +17,27 @@ impl Default for Query {
     }
 }
 
-pub fn get_posts(query: Option<Query>, conn: Conn) -> impl Future<Item = Vec<Post>, Error = Error> {
+pub fn get_posts(query: Option<Query>, conn: Conn) -> Fallible<Vec<Post>> {
+    use crate::schema::posts::dsl::*;
     let query = query.unwrap_or_default();
-    execute_blocking_code(move || {
-        use crate::schema::posts::dsl::*;
-        posts.limit(query.count).load::<Post>(&*conn)
-    })
+    posts
+        .limit(query.count)
+        .load::<Post>(&*conn)
+        .map_err(Into::into)
 }
 
-pub fn create_post(new_post: NewPost, conn: Conn) -> impl Future<Item = Post, Error = Error> {
-    execute_blocking_code(move || {
-        diesel::insert_into(posts::table)
-            .values(&new_post)
-            .get_result::<Post>(&*conn)
-    })
+pub fn create_post(new_post: NewPost, conn: Conn) -> Fallible<Post> {
+    diesel::insert_into(posts::table)
+        .values(&new_post)
+        .get_result::<Post>(&*conn)
+        .map_err(Into::into)
 }
 
-pub fn find_post(i: i32, conn: Conn) -> impl Future<Item = Option<Post>, Error = Error> {
-    execute_blocking_code(move || {
-        use crate::schema::posts::dsl::{id, posts};
-        posts.filter(id.eq(i)).get_result::<Post>(&*conn).optional()
-    })
+pub fn find_post(i: i32, conn: Conn) -> Fallible<Option<Post>> {
+    use crate::schema::posts::dsl::{id, posts};
+    posts
+        .filter(id.eq(i))
+        .get_result::<Post>(&*conn)
+        .optional()
+        .map_err(Into::into)
 }

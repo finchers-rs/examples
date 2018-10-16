@@ -3,10 +3,9 @@ members = [
   "custom-logging",
   "diesel",
   "jwt-auth",
+  "middlewares",
   "session-redis",
   "staticfiles",
-  "template-tera",
-  "middlewares",
   "websocket",
 ]
 
@@ -18,16 +17,10 @@ git = "https://github.com/finchers-rs/finchers.git"
 
 [patch.crates-io.finchers-juniper]
 git = "https://github.com/finchers-rs/finchers-juniper.git"
-tag = "v0.1.1"
-
-[patch.crates-io.finchers-r2d2]
-git = "https://github.com/finchers-rs/finchers-r2d2.git"
-tag = "v0.1.0"
 
 [patch.crates-io.finchers-session]
 git = "https://github.com/finchers-rs/finchers-session.git"
-tag = "v0.1.0"
 
 [patch.crates-io.finchers-template]
 git = "https://github.com/finchers-rs/finchers-template-tera.git"
-tag = "v0.1.0"
+
