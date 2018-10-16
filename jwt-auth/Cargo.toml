@@ -1,0 +1,16 @@
+[package]
+name = "jwt-auth"
+version = "0.1.0"
+authors = ["Yusuke Sasaki <yusuke.sasaki.nuem@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+finchers = "0.13"
+http = "0.1.13"
+jsonwebtoken = "5"
+log = "0.4"
+pretty_env_logger = "0.2"
+serde = { version = "1", features = ["derive"] }
+time = "0.1"
+cookie = "0.11.0"
+either = "1.5.0"
