@@ -3,61 +3,100 @@
 #[macro_use]
 extern crate diesel;
 
-mod api;
 mod model;
 mod schema;
 
+use failure::Fallible;
+use http::StatusCode;
+
 use diesel::pg::PgConnection;
 use diesel::r2d2::ConnectionManager;
-use r2d2::{Pool, PooledConnection};
-
-use failure::Fallible;
-use futures::prelude::*;
-use http::StatusCode;
-use serde::Deserialize;
-use std::env;
-use std::sync::Arc;
 
 use finchers::prelude::*;
 use finchers::rt::blocking_section;
 use finchers::{output, path, routes};
 
-type Conn = PooledConnection<ConnectionManager<PgConnection>>;
+use crate::model::{NewPost, Post};
+
+type Conn = r2d2::PooledConnection<ConnectionManager<PgConnection>>;
 
 fn main() -> Fallible<()> {
     dotenv::dotenv()?;
 
-    let manager = ConnectionManager::<PgConnection>::new(env::var("DATABASE_URL")?);
-    let pool = Pool::builder().build(manager)?;
-    let acquire_conn = Arc::new(endpoint::unit().and_then(move || {
-        let pool = pool.clone();
-        blocking_section(move || pool.get().map_err(finchers::error::fail))
-    }));
+    let acquire_conn = {
+        use std::env;
+        use std::sync::Arc;
 
-    let endpoint = path!(/"api"/"v1"/"posts").and(routes!{
-        path!(@get /)
-            .and(endpoints::query::optional())
-            .and(acquire_conn.clone())
-            .and_then(|query, conn| blocking_section(move || crate::api::get_posts(query, conn)).from_err())
-            .map(output::Json),
+        let manager = ConnectionManager::<PgConnection>::new(env::var("DATABASE_URL")?);
+        let pool = r2d2::Pool::builder().build(manager)?;
+        Arc::new(endpoint::unit().and_then(move || {
+            let pool = pool.clone();
+            blocking_section(move || pool.get().map_err(finchers::error::fail))
+        }))
+    };
 
-        path!(@post /)
-            .and(endpoints::body::json())
-            .and(acquire_conn.clone())
-            .and_then(|new_post, conn| blocking_section(move || crate::api::create_post(new_post, conn)).from_err())
-            .map(output::Json)
-            .map(output::status::Created),
+    let get_posts = path!(@get /)
+        .and(endpoints::query::optional())
+        .and(acquire_conn.clone())
+        .and_then({
+            #[derive(Debug, serde::Deserialize)]
+            pub struct Query {
+                count: i64,
+            }
 
+            |query: Option<Query>, conn: Conn| {
+                let query = query.unwrap_or_else(|| Query { count: 20 });
+                blocking_section(move || {
+                    use crate::schema::posts::dsl::*;
+                    use diesel::prelude::*;
+                    posts
+                        .limit(query.count)
+                        .load::<Post>(&*conn)
+                        .map(output::Json)
+                        .map_err(finchers::error::fail)
+                })
+            }
+        });
+
+    let create_post = path!(@post /)
+        .and(endpoints::body::json())
+        .and(acquire_conn.clone())
+        .and_then(|new_post: NewPost, conn: Conn| {
+            blocking_section(move || {
+                use diesel::prelude::*;
+                diesel::insert_into(crate::schema::posts::table)
+                    .values(&new_post)
+                    .get_result::<Post>(&*conn)
+                    .map(output::Json)
+                    .map(output::status::Created)
+                    .map_err(finchers::error::fail)
+            })
+        });
+
+    let find_post =
         path!(@get / i32 /)
             .and(acquire_conn.clone())
-            .and_then(|id, conn| {
-                blocking_section(move ||
-                crate::api::find_post(id, conn))
-                    .from_err()
-                    .and_then(|conn_opt| conn_opt.ok_or_else(|| finchers::error::err_msg(StatusCode::NOT_FOUND, "not found"))
-                    )
-            })
-            .map(output::Json),
+            .and_then(|id: i32, conn: Conn| {
+                blocking_section(move || {
+                    use crate::schema::posts::dsl;
+                    use diesel::prelude::*;
+                    dsl::posts
+                        .filter(dsl::id.eq(id))
+                        .get_result::<Post>(&*conn)
+                        .optional()
+                        .map_err(finchers::error::fail)
+                        .and_then(|conn_opt| {
+                            conn_opt.ok_or_else(|| {
+                                finchers::error::err_msg(StatusCode::NOT_FOUND, "not found")
+                            })
+                        }).map(output::Json)
+                })
+            });
+
+    let endpoint = path!(/"api"/"v1"/"posts").and(routes!{
+        get_posts,
+        create_post,
+        find_post,
     });
 
     finchers::server::start(endpoint).serve("127.0.0.1:4000")?;
