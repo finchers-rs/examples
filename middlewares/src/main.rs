@@ -1,6 +1,6 @@
 use finchers::output::body::optional;
 use finchers::prelude::*;
-use finchers::rt::middleware::map_response_body;
+use finchers::server::middleware::map_response_body;
 
 use http::Method;
 use tower_web::middleware::cors::{AllowedOrigins, CorsBuilder};
@@ -16,10 +16,10 @@ fn main() {
         .build();
 
     println!("Listening on http://127.0.0.1:4000");
-    finchers::rt::launch(endpoint)
+    finchers::server::start(endpoint)
         .with_tower_middleware(log_middleware)
         .with_tower_middleware(cors_middleware)
         .with_middleware(map_response_body(optional))
-        .serve_http("127.0.0.1:4000")
+        .serve("127.0.0.1:4000")
         .expect("failed to start the server");
 }

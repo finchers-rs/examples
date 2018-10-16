@@ -2,6 +2,7 @@
 members = [
   "custom-logging",
   "diesel",
+  "jwt-auth",
   "session-redis",
   "staticfiles",
   "template-tera",
@@ -10,7 +11,6 @@ members = [
 ]
 
 [patch.crates-io]
-finchers-cors = { git = "https://github.com/finchers-rs/finchers-cors.git" }
 finchers-tungstenite = { git = "https://github.com/finchers-rs/finchers-tungstenite.git" }
 
 [patch.crates-io.finchers]
