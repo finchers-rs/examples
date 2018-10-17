@@ -2,6 +2,7 @@
 members = [
   "custom-logging",
   "diesel",
+  "juniper",
   "jwt-auth",
   "middlewares",
   "session-redis",
